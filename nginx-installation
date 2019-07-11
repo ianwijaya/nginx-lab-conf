@@ -3,3 +3,7 @@ sudo wget -P /etc/yum.repos.d https://cs.nginx.com/static/files/nginx-plus-7.rep
 sudo yum install -y nginx-plus && \
 sudo systemctl enable nginx.service && \
 sudo systemctl start nginx.service
+sudo systemctl status nginx
+
+#check and apply configuration 
+sudo nginx -t && sudo nginx -s reload
