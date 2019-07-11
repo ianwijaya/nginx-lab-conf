@@ -1,0 +1,5 @@
+sudo yum install -y ca-certificates && \
+sudo wget -P /etc/yum.repos.d https://cs.nginx.com/static/files/nginx-plus-7.repo && \
+sudo yum install -y nginx-plus && \
+sudo systemctl enable nginx.service && \
+sudo systemctl start nginx.service
