@@ -1,0 +1,54 @@
+server {
+    location / {
+        proxy_pass http://backend;
+        health_check;
+    }
+}
+
+
+#By default, every five seconds NGINX Plus sends a request for “/” to each server in the backend group. If any communication error or timeout occurs (the server responds with a status code outside the range from 200 through 399) the health check fails. If the server is marked as unhealthy NGINX Plus does not send client requests to it until it once again passes a health check. To allow the worker processes to use the same set of counters to keep track of responses from the servers in an upstream group use a shared memory zone (zone).
+#to change : 
+
+
+sudo bash -c 'cat > /etc/nginx/conf.d/labMatch.conf' <<EOF
+match f5_ok {
+    status 200;
+}
+
+match nginx_ok {
+    status 200-399;
+    body !~ "maintenance mode";
+}
+EOF
+
+sudo bash -c 'cat > /etc/nginx/conf.d/labApp.conf' <<EOF
+server {
+    listen 80 default_server;
+    server_name f5-app.nginx-udf.internal bigip-app.nginx-udf.internal;
+    error_log /var/log/nginx/f5App.error.log info;
+    access_log /var/log/nginx/f5App.access.log combined;
+    status_zone f5App;
+
+    location / {
+        proxy_pass http://f5App;
+        health_check match=f5_ok;
+    }
+}
+
+server {
+    listen 80;
+    server_name nginx-app.nginx-udf.internal;
+    error_log /var/log/nginx/nginxApp.error.log info;
+    access_log /var/log/nginx/nginxApp.access.log combined;
+    status_zone nginxApp;
+
+    location /text {
+        proxy_pass http://nginxApp-text;
+        health_check match=nginx_ok;
+    }
+    location / {
+        proxy_pass http://nginxApp;
+        health_check match=nginx_ok;
+    }
+}
+EOF
