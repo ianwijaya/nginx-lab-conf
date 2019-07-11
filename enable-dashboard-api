@@ -22,3 +22,19 @@ server {
     }
 }
 EOF
+
+
+=====================
+
+curl -s http://master.nginx-udf.internal/api/4 | jq .
+[
+"nginx",
+"processes",
+"connections",
+"slabs",
+"http",
+"stream",
+"ssl"
+]
+
+curl -s http://master.nginx-udf.internal/api/4/http/ | jq .
