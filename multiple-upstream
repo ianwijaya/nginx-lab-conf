@@ -1,0 +1,56 @@
+sudo bash -c 'cat > /etc/nginx/conf.d/labUpstream.conf' <<EOF
+upstream f5App {
+    least_conn;
+    zone f5App 64k;
+    server docker.nginx-udf.internal:8080;
+    server docker.nginx-udf.internal:8081;
+    server docker.nginx-udf.internal:8082;
+
+}
+
+upstream nginxApp {
+    least_conn;
+    zone nginxApp 64k;
+    server docker.nginx-udf.internal:8083;
+    server docker.nginx-udf.internal:8084;
+    server docker.nginx-udf.internal:8085;
+}
+
+upstream nginxApp-text {
+    least_conn;
+    zone nginxApp 64k;
+    server docker.nginx-udf.internal:8086;
+    server docker.nginx-udf.internal:8087;
+    server docker.nginx-udf.internal:8088;
+}
+EOF
+=======================================================
+
+sudo bash -c 'cat > /etc/nginx/conf.d/labApp.conf' <<EOF
+server {
+    listen 80 default_server;
+    server_name f5-app.nginx-udf.internal bigip-app.nginx-udf.internal;
+    error_log /var/log/nginx/f5App.error.log info;
+    access_log /var/log/nginx/f5App.access.log combined;
+
+    location / {
+        proxy_pass http://f5App;
+
+    }
+}
+
+server {
+    listen 80;
+    server_name nginx-app.nginx-udf.internal;
+    error_log /var/log/nginx/nginxApp.error.log info;
+    access_log /var/log/nginx/nginxApp.access.log combined;
+    status_zone nginxApp;
+
+    location /text {
+        proxy_pass http://nginxApp-text;
+    }
+    location / {
+        proxy_pass http://nginxApp;
+    }
+}
+EOF
