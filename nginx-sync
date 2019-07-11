@@ -1,0 +1,26 @@
+sudo bash -c 'cat >> /etc/nginx/nginx.conf' <<EOF
+stream {
+
+    server {
+    listen 9000;
+
+    zone_sync;
+    zone_sync_server master.nginx-udf.internal:9000;
+    zone_sync_server plus2.nginx-udf.internal:9000;
+    zone_sync_server plus3.nginx-udf.internal:9000;
+    }
+}
+EOF
+
+======================
+sudo bash -c 'cat > /etc/nginx-sync.conf' <<EOF
+NODES="plus2.nginx-udf.internal plus3.nginx-udf.internal"
+CONFPATHS="/etc/nginx/nginx.conf /etc/nginx/conf.d"
+EXCLUDE="default.conf"
+EOF
+
+=======================
+#install and run nginx-sync 
+
+sudo yum install -y nginx-sync && \
+sudo nginx-sync.sh
